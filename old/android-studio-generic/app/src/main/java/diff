@@ -1,0 +1,311 @@
+diff --git a/android-studio/app/src/main/java/AllegroActivity.java b/android-studio/app/src/main/java/AllegroActivity.java
+index 6181663..ed8115a 100644
+--- a/android-studio/app/src/main/java/AllegroActivity.java
++++ b/android-studio/app/src/main/java/AllegroActivity.java
+@@ -1,4 +1,5 @@
+ package org.liballeg.android;
++
+ import android.app.Activity;
+ import android.content.Context;
+ import android.content.pm.ActivityInfo;
+@@ -21,6 +22,7 @@ import java.lang.Runnable;
+ import java.lang.String;
+ import android.view.InputDevice;
+ import java.util.Vector;
++
+ import android.support.v4.app.FragmentActivity;
+ 
+ public class AllegroActivity extends FragmentActivity
+@@ -63,13 +65,14 @@ public class AllegroActivity extends FragmentActivity
+ 
+    String getUserLibName()
+    {
+-      ApplicationInfo appInfo = getApplicationInfo();
+-      String libDir = Reflect.getField(appInfo, "nativeLibraryDir");
+-      /* Android < 2.3 doesn't have .nativeLibraryDir */
+-      if (libDir == null) {
+-         libDir = appInfo.dataDir + "/lib";
+-      }
+-      return libDir + "/" + userLibName;
++      //ApplicationInfo appInfo = getApplicationInfo();
++      //String libDir = Reflect.getField(appInfo, "nativeLibraryDir");
++      ///* Android < 2.3 doesn't have .nativeLibraryDir */
++      //if (libDir == null) {
++         //libDir = appInfo.dataDir + "/lib";
++      //}
++      //return libDir + "/" + userLibName;
++      return userLibName;
+    }
+ 
+    String getResourcesDir()
+diff --git a/android-studio/app/src/main/java/AllegroEGL.java b/android-studio/app/src/main/java/AllegroEGL.java
+index e0d4928..5b827a2 100644
+--- a/android-studio/app/src/main/java/AllegroEGL.java
++++ b/android-studio/app/src/main/java/AllegroEGL.java
+@@ -4,7 +4,8 @@ import android.content.Context;
+ import android.util.Log;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+-import javax.microedition.khronos.egl.*;
++//import javax.microedition.khronos.egl.*;
++import android.opengl.*;
+ 
+ class AllegroEGL
+ {
+@@ -15,26 +16,26 @@ class AllegroEGL
+    private static final int EGL_OPENGL_ES2_BIT = 4;
+ 
+    private static HashMap<Integer, String> eglErrors;
+-   private static void checkEglError(String prompt, EGL10 egl) {
++   private static void checkEglError(String prompt, EGL14 egl) {
+       if (eglErrors == null) {
+           eglErrors = new HashMap<Integer, String>();
+-          eglErrors.put(EGL10.EGL_BAD_DISPLAY, "EGL_BAD_DISPLAY");
+-          eglErrors.put(EGL10.EGL_NOT_INITIALIZED, "EGL_NOT_INITIALIZED");
+-          eglErrors.put(EGL10.EGL_BAD_SURFACE, "EGL_BAD_SURFACE");
+-          eglErrors.put(EGL10.EGL_BAD_CONTEXT, "EGL_BAD_CONTEXT");
+-          eglErrors.put(EGL10.EGL_BAD_MATCH, "EGL_BAD_MATCH");
+-          eglErrors.put(EGL10.EGL_BAD_ACCESS, "EGL_BAD_ACCESS");
+-          eglErrors.put(EGL10.EGL_BAD_NATIVE_PIXMAP, "EGL_BAD_NATIVE_PIXMAP");
+-          eglErrors.put(EGL10.EGL_BAD_NATIVE_WINDOW, "EGL_BAD_NATIVE_WINDOW");
+-          eglErrors.put(EGL10.EGL_BAD_CURRENT_SURFACE, "EGL_BAD_CURRENT_SURFACE");
+-          eglErrors.put(EGL10.EGL_BAD_ALLOC, "EGL_BAD_ALLOC");
+-          eglErrors.put(EGL10.EGL_BAD_CONFIG, "EGL_BAD_CONFIG");
+-          eglErrors.put(EGL10.EGL_BAD_ATTRIBUTE, "EGL_BAD_ATTRIBUTE");
+-          eglErrors.put(EGL11.EGL_CONTEXT_LOST, "EGL_CONTEXT_LOST");
++          eglErrors.put(EGL14.EGL_BAD_DISPLAY, "EGL_BAD_DISPLAY");
++          eglErrors.put(EGL14.EGL_NOT_INITIALIZED, "EGL_NOT_INITIALIZED");
++          eglErrors.put(EGL14.EGL_BAD_SURFACE, "EGL_BAD_SURFACE");
++          eglErrors.put(EGL14.EGL_BAD_CONTEXT, "EGL_BAD_CONTEXT");
++          eglErrors.put(EGL14.EGL_BAD_MATCH, "EGL_BAD_MATCH");
++          eglErrors.put(EGL14.EGL_BAD_ACCESS, "EGL_BAD_ACCESS");
++          eglErrors.put(EGL14.EGL_BAD_NATIVE_PIXMAP, "EGL_BAD_NATIVE_PIXMAP");
++          eglErrors.put(EGL14.EGL_BAD_NATIVE_WINDOW, "EGL_BAD_NATIVE_WINDOW");
++          eglErrors.put(EGL14.EGL_BAD_CURRENT_SURFACE, "EGL_BAD_CURRENT_SURFACE");
++          eglErrors.put(EGL14.EGL_BAD_ALLOC, "EGL_BAD_ALLOC");
++          eglErrors.put(EGL14.EGL_BAD_CONFIG, "EGL_BAD_CONFIG");
++          eglErrors.put(EGL14.EGL_BAD_ATTRIBUTE, "EGL_BAD_ATTRIBUTE");
++          eglErrors.put(EGL14.EGL_CONTEXT_LOST, "EGL_CONTEXT_LOST");
+       }
+ 
+       int error;
+-      while ((error = egl.eglGetError()) != EGL10.EGL_SUCCESS) {
++      while ((error = egl.eglGetError()) != EGL14.EGL_SUCCESS) {
+          Log.e("Allegro", String.format("%s: EGL error: %s", prompt,
+             eglErrors.get(error)));
+       }
+@@ -44,19 +45,22 @@ class AllegroEGL
+    private EGLContext egl_Context;
+    private EGLSurface egl_Surface;
+    private EGLDisplay egl_Display;
+-   private HashMap<Integer, Integer> attribMap;
++   private HashMap<Integer, Integer> attribMap = new HashMap();
+    private EGLConfig[] matchingConfigs;
+    private EGLConfig chosenConfig;
+-
++   
++   private EGL14 egl;
++   
+    boolean egl_Init()
+    {
++      egl = new EGL14();
++
+       Log.d(TAG, "egl_Init");
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+ 
+-      EGLDisplay dpy = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
++      EGLDisplay dpy = egl.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+ 
+       int[] egl_version = { 0, 0 };
+-      if (!egl.eglInitialize(dpy, egl_version)) {
++      if (!egl.eglInitialize(dpy, egl_version, 0, egl_version, 1)) {
+          Log.d(TAG, "egl_Init fail");
+          return false;
+       }
+@@ -74,7 +78,6 @@ class AllegroEGL
+       egl_destroySurface();
+       egl_destroyContext();
+ 
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+       egl.eglTerminate(egl_Display);
+       egl_Display = null;
+    }
+@@ -94,7 +97,6 @@ class AllegroEGL
+ 
+    private int eglAttrib(int al_attr)
+    {
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+       final int[] mapping = attribMapping(egl);
+ 
+       for (int i = 0; i < mapping.length; i += 2) {
+@@ -106,7 +108,7 @@ class AllegroEGL
+       return -1;
+    }
+ 
+-   private final int[] attribMapping(EGL10 egl)
++   private final int[] attribMapping(EGL14 egl)
+    {
+       return new int[] {
+          egl.EGL_RED_SIZE,       Const.ALLEGRO_RED_SIZE,
+@@ -123,19 +125,18 @@ class AllegroEGL
+ 
+    int egl_chooseConfig(boolean programmable_pipeline)
+    {
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+ 
+-      if (programmable_pipeline) {
+-         attribMap.put(EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT);
+-      } else {
+-         attribMap.put(EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT);
+-      }
++      //if (programmable_pipeline) {
++         attribMap.put(EGL14.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT);
++      //} else {
++         //attribMap.put(EGL14.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT);
++      //}
+ 
+       /* Populate the matchingConfigs array. */
+       matchingConfigs = new EGLConfig[20];
+       int[] num = new int[1];
+-      boolean ok = egl.eglChooseConfig(egl_Display, requiredAttribsArray(),
+-         matchingConfigs, matchingConfigs.length, num);
++      boolean ok = egl.eglChooseConfig(egl_Display, requiredAttribsArray(), 0,
++         matchingConfigs, 0, matchingConfigs.length, num, 0);
+       if (!ok || num[0] < 1) {
+          Log.e(TAG, "No matching config");
+          return 0;
+@@ -155,7 +156,7 @@ class AllegroEGL
+          arr[i++] = attrib;
+          arr[i++] = attribMap.get(attrib);
+       }
+-      arr[i] = EGL10.EGL_NONE; /* sentinel */
++      arr[i] = EGL14.EGL_NONE; /* sentinel */
+       return arr;
+    }
+ 
+@@ -167,7 +168,6 @@ class AllegroEGL
+          ret[i] = 0;
+       }
+ 
+-      final EGL10 egl = (EGL10)EGLContext.getEGL();
+       final EGLConfig config = matchingConfigs[index];
+       final int[] mapping = attribMapping(egl);
+       final int box[] = new int[1];
+@@ -176,7 +176,7 @@ class AllegroEGL
+          int egl_attr = mapping[i];
+          int al_attr = mapping[i + 1];
+ 
+-         if (egl.eglGetConfigAttrib(egl_Display, config, egl_attr, box)) {
++         if (egl.eglGetConfigAttrib(egl_Display, config, egl_attr, box, 0)) {
+             ret[al_attr] = box[0];
+          } else {
+             Log.e(TAG, "eglGetConfigAttrib(" + egl_attr + ") failed\n");
+@@ -184,30 +184,30 @@ class AllegroEGL
+       }
+    }
+ 
++   private int chosenIndex;
++
+    /* Return values:
+     * 0 - failure
+     * 1 - success
+-    * 2 - fell back to older ES version XXX never happens
+     */
+    int egl_createContext(int configIndex, boolean programmable_pipeline)
+    {
+       Log.d(TAG, "egl_createContext");
+ 
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+ 
++      chosenIndex = configIndex;
+       chosenConfig = matchingConfigs[configIndex];
+       matchingConfigs = null;
+-      attribMap = null;
+ 
+       int version = (programmable_pipeline) ? 2 : 1;
+       int[] attribs = {
+          EGL_CONTEXT_CLIENT_VERSION, version,
+-         EGL10.EGL_NONE
++         EGL14.EGL_NONE
+       };
+ 
+       EGLContext ctx = egl.eglCreateContext(egl_Display, chosenConfig,
+-         EGL10.EGL_NO_CONTEXT, attribs);
+-      if (ctx == EGL10.EGL_NO_CONTEXT) {
++         EGL14.EGL_NO_CONTEXT, attribs, 0);
++      if (ctx == EGL14.EGL_NO_CONTEXT) {
+          checkEglError("eglCreateContext", egl);
+          Log.d(TAG, "egl_createContext no context");
+          return 0;
+@@ -221,18 +221,16 @@ class AllegroEGL
+ 
+    private void egl_destroyContext()
+    {
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+       Log.d(TAG, "destroying egl_Context");
+       egl.eglDestroyContext(egl_Display, egl_Context);
+-      egl_Context = EGL10.EGL_NO_CONTEXT;
++      egl_Context = EGL14.EGL_NO_CONTEXT;
+    }
+ 
+    boolean egl_createSurface(AllegroSurface parent)
+    {
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+       EGLSurface surface = egl.eglCreateWindowSurface(egl_Display,
+-         chosenConfig, parent, null);
+-      if (surface == EGL10.EGL_NO_SURFACE) {
++         chosenConfig, parent, requiredAttribsArray(), chosenIndex);
++      if (surface == EGL14.EGL_NO_SURFACE) {
+          Log.d(TAG, "egl_createSurface can't create surface: " +
+                egl.eglGetError());
+          return false;
+@@ -253,24 +251,22 @@ class AllegroEGL
+ 
+    private void egl_destroySurface()
+    {
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+-      if (!egl.eglMakeCurrent(egl_Display, EGL10.EGL_NO_SURFACE,
+-            EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT))
++      if (!egl.eglMakeCurrent(egl_Display, EGL14.EGL_NO_SURFACE,
++            EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT))
+       {
+          Log.d(TAG, "could not clear current context");
+       }
+ 
+       Log.d(TAG, "destroying egl_Surface");
+       egl.eglDestroySurface(egl_Display, egl_Surface);
+-      egl_Surface = EGL10.EGL_NO_SURFACE;
++      egl_Surface = EGL14.EGL_NO_SURFACE;
+    }
+ 
+    void egl_clearCurrent()
+    {
+       Log.d(TAG, "egl_clearCurrent");
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+-      if (!egl.eglMakeCurrent(egl_Display, EGL10.EGL_NO_SURFACE,
+-               EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT))
++      if (!egl.eglMakeCurrent(egl_Display, EGL14.EGL_NO_SURFACE,
++               EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT))
+       {
+          Log.d(TAG, "could not clear current context");
+       }
+@@ -279,7 +275,6 @@ class AllegroEGL
+ 
+    void egl_makeCurrent()
+    {
+-      EGL10 egl = (EGL10)EGLContext.getEGL();
+       if (!egl.eglMakeCurrent(egl_Display, egl_Surface, egl_Surface, egl_Context)) {
+          // egl.eglDestroySurface(egl_Display, surface);
+          // egl.eglTerminate(egl_Display);
+@@ -292,10 +287,9 @@ class AllegroEGL
+    void egl_SwapBuffers()
+    {
+       try {
+-         EGL10 egl = (EGL10)EGLContext.getEGL();
+ 
+          // FIXME: Pretty sure flush is implicit with SwapBuffers
+-         //egl.eglWaitNative(EGL10.EGL_NATIVE_RENDERABLE, null);
++         //egl.eglWaitNative(EGL14.EGL_NATIVE_RENDERABLE, null);
+          //egl.eglWaitGL();
+ 
+          egl.eglSwapBuffers(egl_Display, egl_Surface);

@@ -1,0 +1,59 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'nooskewl'
+            keyPassword 'FIXME'
+            storeFile file('C:/Users/trent/code/my-release-key.keystore')
+            storePassword 'FIXME'
+        }
+    }
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "ca.nooskewl.monsterrpg2"
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode 42 
+        versionName '2.14.3'
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+        ndk {
+            abiFilters 'armeabi-v7a', "arm64-v8a", "x86", "x86_64"
+        }
+        externalNativeBuild {
+            ndkBuild {
+                arguments '-j8'
+            }
+        }
+        signingConfig signingConfigs.config
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path "../ndk-build-project/jni/Android.mk"
+        }
+    }
+    buildToolsVersion '28.0.3'
+    productFlavors {
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'com.google.android.gms:play-services:12.0.1'
+    implementation 'com.android.support:multidex:1.0.3'
+}
