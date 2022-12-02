@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ANDROID_DIR := C:\Users\trent\code\android.m3-m2-cp
+ANDROID_DIR := C:\Users\trent\code\android.older
 
 LOCAL_PATH := $(call my-dir)
 
