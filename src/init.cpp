@@ -681,10 +681,10 @@ void load_fonts(void)
 	
 	std::string font_name;
 	if (get_language_name(config.getLanguage()) == "Korean") {
-		font_name = "NanumGothicBold.gif";
+		font_name = "NanumGothicBold.ttf";
 	}
 	else {
-		font_name = "DejaVuSans.gif";
+		font_name = "DejaVuSans.ttf";
 	}
 
 	game_font = my_load_ttf_font(getResource(font_name.c_str()), 9*(MIN(screenScaleX, screenScaleY)/2), ttf_flags);
@@ -704,7 +704,7 @@ void load_fonts(void)
 #ifdef ALLEGRO_ANDROID
 	al_set_config_value(sysconfig, "ttf", "cache_text", "0123456789:");
 #endif
-	huge_font = my_load_ttf_font(getResource("heavy.gif"), 24, ttf_flags);
+	huge_font = my_load_ttf_font(getResource("heavy.ttf"), 24, ttf_flags);
 	if (!huge_font) {
 		native_error("Failed to load huge_font.");
 	}
